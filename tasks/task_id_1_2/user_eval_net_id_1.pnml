@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<pnml><net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel"><page id="n0"><transition id="n15">
+                <name>
+                    <text>Ship Bicycle to Customer</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Ship Bicycle to Customer" localNodeID="f3620ce9-3a84-493c-9621-553285d1ff0e" />
+                <graphics>
+                    <position x="662.5" y="104.5" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n16">
+                <name>
+                    <text>Inform Storehouse and Engineering Department</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Inform Storehouse and Engineering Department" localNodeID="2b6f6d69-2575-489c-aafb-69de9baea74d" />
+                <graphics>
+                    <position x="137.5" y="111.0" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n17">
+                <name>
+                    <text>Assemble Bicycle</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Assemble Bicycle" localNodeID="1bbf6cbb-a4d5-4a27-94c2-5ad4e75e224a" />
+                <graphics>
+                    <position x="575.0" y="109.0" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n18">
+                <name>
+                    <text>Back-order Part</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Back-order Part" localNodeID="4def780f-3973-4d81-99dd-3b7b0fb79c6f" />
+                <graphics>
+                    <position x="400.0" y="105.5" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n19">
+                <name>
+                    <text>Reserve Part</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Reserve Part" localNodeID="e1e1a757-6369-40a4-8f4b-c44227290159" />
+                <graphics>
+                    <position x="400.0" y="70.5" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n20">
+                <name>
+                    <text>Check Part Quality</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Check Part Quality" localNodeID="a1fb3fa8-0e0d-4ea8-8c26-49be9ba29c8e" />
+                <graphics>
+                    <position x="312.5" y="87.5" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n21">
+                <name>
+                    <text>Select Unchecked Part</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Select Unchecked Part" localNodeID="14bddbd5-cd65-4638-887c-0261b5e73f32" />
+                <graphics>
+                    <position x="487.5" y="112.5" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n22">
+                <name>
+                    <text>Receive Order</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Receive Order" localNodeID="2f9fba75-aeb6-42e1-a96c-9656e451f2ba" />
+                <graphics>
+                    <position x="50.0" y="95.5" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            <transition id="n23">
+                <name>
+                    <text>Prepare for Assembling</text>
+                </name>
+                <toolspecific tool="ProM" version="6.4" activity="Prepare for Assembling" localNodeID="e4a810b1-4ca5-4a8c-80d7-0b36a4386834" />
+                <graphics>
+                    <position x="225.0" y="130.0" />
+                    <dimension x="25.0" y="20.0" />
+                    <fill color="#FFFFFF" />
+                </graphics>
+            </transition>
+            </page></net></pnml>

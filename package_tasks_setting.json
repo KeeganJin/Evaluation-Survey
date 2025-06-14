@@ -1,0 +1,53 @@
+{
+  "package_1": [
+    "task_id_1_1",
+    "task_id_1_2",
+    "task_id_1_3",
+    "task_id_1_4"
+  ],
+  "package_2": [
+    "task_id_2_1",
+    "task_id_2_2",
+    "task_id_2_3",
+    "task_id_2_4"
+  ],
+  "package_3": [
+    "task_id_3_1",
+    "task_id_3_2",
+    "task_id_3_3",
+    "task_id_3_4"
+  ],
+  "package_4": [
+    "task_id_4_1",
+    "task_id_4_2",
+    "task_id_4_3",
+    "task_id_4_4"
+  ],
+  "package_5": [
+    "task_id_5_1",
+    "task_id_5_2",
+    "task_id_5_3",
+    "task_id_5_4"
+  ],
+  "package_6": [
+    "task_id_6_1",
+    "task_id_6_2",
+    "task_id_6_3"
+  ],
+  "package_7": [
+    "task_id_7_1",
+    "task_id_7_2",
+    "task_id_7_3",
+    "task_id_7_4"
+  ],
+  "package_8": [
+    "task_id_8_1",
+    "task_id_8_2",
+    "task_id_8_3"
+  ],
+  "package_9": [
+    "task_id_9_1",
+    "task_id_9_2",
+    "task_id_9_3"
+  ]
+}

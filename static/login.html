@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Thanks for participating our Evaluation</h1>
+    <p style="font-size: 0.95em; color: #555; background: #f9f9f9; padding: 1em; border-left: 4px solid #ccc; margin-bottom: 1.5em;">
+  <strong>Note:</strong> The name and password are automatically generated for each evaluation session.
+
+        You can use them to return and continue your evaluation within <strong>2 hours</strong> if you accidentally
+        leave the page before completing all tasks :)
+    </p>
+    <p style="font-size: 0.95em; color: #555; background: #f9f9f9; padding: 1em; border-left: 4px solid #ccc; margin-bottom: 1.5em;">
+   You can also start a new evaluation by refreshing and "Start Evaluation" again :)
+    </p>
+
+    <form id="loginForm">
+
+        <label>Username:<br><input type="text" id="userId" required></label><br>
+        <label>Password:<br><input type="email" id="email" required></label><br>
+
+        <label>Please Select Your Background:<br>
+            <select id="background">
+                <option value="BPM_Expert">PM Expert/Researcher</option>
+                <option value="APM_Student">APM Student</option>
+                <option value="BPI_Student">BPI Student</option>
+                <option value="APMBPM_Passed">Student Passed APM/BPI</option>
+            </select>
+        </label><br><br>
+        <button type="submit">Start Evaluation</button>
+    </form>
+</div>
+
+<script>
+
+    function generateFunnyId() {
+        const adjectives = ["sassy", "rwth", "witty", "bouncy", "curious", "jumpy", "sleepy", "cheeky", "zany",
+            "snappy"];
+        const nouns = ["panda", "pm-lover", "squid", "turnip", "llama", "octopus", "koala", "walrus", "tiger",
+            "hedgehog"];
+        const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+        const noun = nouns[Math.floor(Math.random() * nouns.length)];
+        const number = Math.floor(100 + Math.random() * 900); // 3-digit number
+        const userId = `${adj}-${noun}-${number}`;
+        const email = `${userId}@anon.pwd`;
+        return {userId, email};
+    }
+
+    // Pre-fill user ID and email on page load
+    window.addEventListener("DOMContentLoaded", () => {
+        const {userId, email} = generateFunnyId();
+        document.getElementById("userId").value = userId;
+        document.getElementById("email").value = email;
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const userId = document.getElementById("userId").value;
+        const email = document.getElementById("email").value;
+        const background = document.getElementById("background").value;
+
+        if (!background) {
+          alert("Please select your background.");
+          return;
+        }
+
+        const res = await fetch("/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({user_id: userId, email, background})
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            localStorage.setItem("userId", userId);
+            localStorage.setItem("email", email);
+            localStorage.setItem("taskId", result.package_id);
+            localStorage.setItem("uploadedTasks", JSON.stringify({}));
+            window.location.href = "questionnaire.html";
+        } else {
+            alert(result.error || "Login failed.");
+        }
+    });
+</script>
+</body>
+</html>

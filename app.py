@@ -22,6 +22,7 @@ FEEDBACK_FILE = os.path.join(DATABASE_FOLDER, "feedback.jsonl")
 TASK_FOLDER = "tasks"
 INSTRUCTIONS_FILE = "task_instruction.md"
 LOCK_TIMEOUT_HOURS = 2
+MAX_EVALUATIONS_PER_PACKAGE = 3
 
 # Ensure folders and files exist
 os.makedirs(DATABASE_FOLDER, exist_ok=True)
@@ -75,7 +76,7 @@ def assign_package(user_id, email):
 
         if user_key in assigned_to or user_key in evaluated_by:
             continue
-        if len(evaluated_by) >= 3:
+        if len(evaluated_by) >= MAX_EVALUATIONS_PER_PACKAGE:
             continue
         eligible.append((pkg_id, entry))
 
@@ -126,7 +127,7 @@ def login():
 
     sessions = load_json(SESSIONS_FILE)
     session = sessions.get(user_id)
-
+    # ok lets allow user to re-login
     if session and session["email"] == email and datetime.fromisoformat(session["locked_until"]) > now():
         return jsonify(success=True, package_id=session["task_id"], resumed=True)
 
@@ -221,42 +222,42 @@ def submit_rating():
 
     return jsonify(success=True)
 
-@app.route("/mark-complete", methods=["POST"])
-def mark_complete():
-    data = request.get_json()
-    user_id = data.get("user_id")
-    email = data.get("email")
-    package_id = data.get("package_id")
-
-    if not user_id or not email or not package_id:
-        return jsonify(success=False, error="Missing required fields"), 400
-
-    user_key = f"{user_id}|{email}"
-
-    packages = load_json(PACKAGES_FILE)
-    sessions = load_json(SESSIONS_FILE)
-
-    if package_id not in packages:
-        return jsonify(success=False, error="Package not found"), 404
-
-    pkg = packages[package_id]
-
-    # Mark as evaluated
-    if user_key not in pkg.get("evaluated_by", []):
-        pkg.setdefault("evaluated_by", []).append(user_key)
-
-    # Remove assignment
-    if isinstance(pkg.get("assigned_to"), dict):
-        pkg["assigned_to"].pop(user_key, None)
-
-    # Remove session
-    sessions.pop(user_id, None)
-
-    save_json(PACKAGES_FILE, packages)
-    save_json(SESSIONS_FILE, sessions)
-
-    return jsonify(success=True, message="Evaluation marked complete")
-
+# @app.route("/mark-complete", methods=["POST"])
+# def mark_complete():
+#     data = request.get_json()
+#     user_id = data.get("user_id")
+#     email = data.get("email")
+#     package_id = data.get("package_id")
+#
+#     if not user_id or not email or not package_id:
+#         return jsonify(success=False, error="Missing required fields"), 400
+#
+#     user_key = f"{user_id}|{email}"
+#
+#     packages = load_json(PACKAGES_FILE)
+#     sessions = load_json(SESSIONS_FILE)
+#
+#     if package_id not in packages:
+#         return jsonify(success=False, error="Package not found"), 404
+#
+#     pkg = packages[package_id]
+#
+#     # Mark as evaluated
+#     if user_key not in pkg.get("evaluated_by", []):
+#         pkg.setdefault("evaluated_by", []).append(user_key)
+#
+#     # Remove assignment
+#     if isinstance(pkg.get("assigned_to"), dict):
+#         pkg["assigned_to"].pop(user_key, None)
+#
+#     # Remove session
+#     sessions.pop(user_id, None)
+#
+#     save_json(PACKAGES_FILE, packages)
+#     save_json(SESSIONS_FILE, sessions)
+#
+#     return jsonify(success=True, message="Evaluation marked complete")
+#
 
 @app.route("/tasks/<task_id>")
 def get_task(task_id):
@@ -299,133 +300,35 @@ def get_task_file(task_id, filename):
 def serve_static(path="login.html"):
     return send_from_directory(app.static_folder, path)
 
-# generate a summary who is assigned what and did what
 
-@app.route("/admin/summary")
-def generate_summary():
-    # Load required data
-    with open("database/package_tasks.json", "r") as f:
-        package_tasks = json.load(f)
-
-    feedback_entries = []
-    if os.path.exists("database/feedback.jsonl"):
-        with open("database/feedback.jsonl", "r") as f:
-            feedback_entries = [json.loads(line.strip()) for line in f if line.strip()]
-
-    sessions_data = {}
-    if os.path.exists("database/sessions.json"):
-        with open("database/sessions.json", "r") as f:
-            sessions_data = json.load(f)
-
-    summary = defaultdict(lambda: {
-        "user_id": "",
-        "email": "",
-        "background": "",
-        "evaluated_packages": {}
-    })
-
-    # Track questionnaires
-    questionnaire_submitted = defaultdict(lambda: defaultdict(bool))
-    for entry in feedback_entries:
-        if not isinstance(entry, dict):
-            continue
-        if "user_id" not in entry or "email" not in entry or "package_id" not in entry:
-            print(f"[WARN] Skipping incomplete feedback entry: {entry}")
-            continue
-
-        user_key = entry["user_id"] + "|" + entry["email"]
-        questionnaire_submitted[user_key][entry["package_id"]] = True
-
-    # Scan uploaded files
-    for package_id, task_ids in package_tasks.items():
-        for task_id in task_ids:
-            task_dir = os.path.join("database", "uploads", task_id)
-            if not os.path.exists(task_dir):
-                continue
-
-            for file in os.listdir(task_dir):
-                if file.endswith(".pnml") and "_v" in file:
-                    user_key = extract_user_key(task_id, file)
-                    if not user_key:
-                        continue
-                    if "|" not in user_key:
-                        continue  # malformed
-
-                    user_id, email = user_key.split("|", 1)
-                    full_key = user_key
-
-                    full_key = f"{user_id}|{email}"
-                    if summary[full_key]["user_id"] == "":
-                        # Try to retrieve background from sessions
-                        background = ""
-
-                        for session_user_id, session_info in sessions_data.items():
-                            if session_info.get("email") == email and session_user_id == user_id:
-                                background = session_info.get("background", "")
-                                break
-                        summary[full_key].update({
-                            "user_id": user_id,
-                            "email": email,
-                            "background": background
-                        })
-
-                    if package_id not in summary[full_key]["evaluated_packages"]:
-                        summary[full_key]["evaluated_packages"][package_id] = {
-                            "package_tasks": task_ids,
-                            "tasks_done": [],
-                            "questionnaire_submitted": False,
-                            "complete_evaluation": False
-                        }
-
-                    if task_id not in summary[full_key]["evaluated_packages"][package_id]["tasks_done"]:
-                        summary[full_key]["evaluated_packages"][package_id]["tasks_done"].append(task_id)
-
-    # Finalize logic: questionnaire + complete check
-    for user_key, user_summary in summary.items():
-        for package_id, pdata in user_summary["evaluated_packages"].items():
-            pdata["questionnaire_submitted"] = questionnaire_submitted[user_key][package_id]
-            pdata["complete_evaluation"] = (
-                pdata["questionnaire_submitted"] and
-                set(pdata["tasks_done"]) == set(pdata["package_tasks"])
-            )
-
-    # Remove users with no uploads
-    summary = {k: v for k, v in summary.items() if v["evaluated_packages"]}
-
-    # Write summary
-    with open("database/summary.json", "w") as f:
-        json.dump(summary, f, indent=2)
-
-    return jsonify({"message": "Summary generated", "user_count": len(summary)})
-
-def extract_user_key(task_id, filename):
-    """
-    Extracts user_id|email from the filename:
-    task_id_userid_safeemail[_non_Sound]_vX.pnml
-    """
-    if not filename.endswith(".pnml"):
-        return None
-
-    name = filename.replace(".pnml", "")
-    name = name.replace("_non_Sound", "")
-    prefix = f"{task_id}_"
-    if not name.startswith(prefix):
-        return None
-    rest = name[len(prefix):]
-
-    # Remove version suffix
-    if "_v" not in rest:
-        return None
-    rest = rest.rsplit("_v", 1)[0]
-
-    # Try to detect where safe_email starts
-    # This assumes email will contain at least "_at_" and "_dot_"
-    parts = rest.split("_")
-    for i in range(1, len(parts)):
-        maybe_email = "_".join(parts[i:])
-        if "_at_" in maybe_email and "_dot_" in maybe_email:
-            user_id = "_".join(parts[:i])
-            safe_email = maybe_email
-            email = safe_email.replace("_at_", "@").replace("_dot_", ".")
-            return f"{user_id}|{email}"
-    return None
+# def extract_user_key(task_id, filename):
+#     """
+#     Extracts user_id|email from the filename:
+#     task_id_userid_safeemail[_non_Sound]_vX.pnml
+#     """
+#     if not filename.endswith(".pnml"):
+#         return None
+#
+#     name = filename.replace(".pnml", "")
+#     name = name.replace("_non_Sound", "")
+#     prefix = f"{task_id}_"
+#     if not name.startswith(prefix):
+#         return None
+#     rest = name[len(prefix):]
+#
+#     # Remove version suffix
+#     if "_v" not in rest:
+#         return None
+#     rest = rest.rsplit("_v", 1)[0]
+#
+#     # Try to detect where safe_email starts
+#     # This assumes email will contain at least "_at_" and "_dot_"
+#     parts = rest.split("_")
+#     for i in range(1, len(parts)):
+#         maybe_email = "_".join(parts[i:])
+#         if "_at_" in maybe_email and "_dot_" in maybe_email:
+#             user_id = "_".join(parts[:i])
+#             safe_email = maybe_email
+#             email = safe_email.replace("_at_", "@").replace("_dot_", ".")
+#             return f"{user_id}|{email}"
+#     return None

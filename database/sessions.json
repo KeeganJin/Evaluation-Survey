@@ -1,0 +1,32 @@
+{
+  "zany-walrus-513": {
+    "email": "zany-walrus-513@anon.pwd",
+    "background": "APM_Student",
+    "task_id": "package_1",
+    "locked_until": "2025-06-14T20:19:55.256724"
+  },
+  "snappy-tiger-953": {
+    "email": "snappy-tiger-953@anon.pwd",
+    "background": "BPM_Expert",
+    "task_id": "package_2",
+    "locked_until": "2025-06-14T20:56:09.715085"
+  },
+  "snappy-turnip-520": {
+    "email": "snappy-turnip-520@anon.pwd",
+    "background": "BPM_Expert",
+    "task_id": "package_3",
+    "locked_until": "2025-06-14T20:57:22.339293"
+  },
+  "bouncy-octopus-767": {
+    "email": "bouncy-octopus-767@anon.pwd",
+    "background": "BPM_Expert",
+    "task_id": "package_4",
+    "locked_until": "2025-06-14T21:00:25.554448"
+  },
+  "zany-pm-lover-242": {
+    "email": "zany-pm-lover-242@anon.pwd",
+    "background": "BPM_Expert",
+    "task_id": "package_2",
+    "locked_until": "2025-06-14T22:55:18.859465"
+  }
+}

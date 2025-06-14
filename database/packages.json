@@ -1,0 +1,42 @@
+{
+  "package_1": {
+    "assigned_to": {},
+    "evaluated_by": [
+      "curious-octopus-517|curious-octopus-517@anon.pwd"
+    ]
+  },
+  "package_2": {
+    "assigned_to": {
+      "zany-pm-lover-242|zany-pm-lover-242@anon.pwd": "2025-06-14T22:55:18.858463"
+    },
+    "evaluated_by": []
+  },
+  "package_3": {
+    "assigned_to": {},
+    "evaluated_by": []
+  },
+  "package_4": {
+    "assigned_to": {},
+    "evaluated_by": []
+  },
+  "package_5": {
+    "assigned_to": {},
+    "evaluated_by": []
+  },
+  "package_6": {
+    "assigned_to": {},
+    "evaluated_by": []
+  },
+  "package_7": {
+    "assigned_to": {},
+    "evaluated_by": []
+  },
+  "package_8": {
+    "assigned_to": {},
+    "evaluated_by": []
+  },
+  "package_9": {
+    "assigned_to": {},
+    "evaluated_by": []
+  }
+}

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Final Questionnaire</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+       </style>
+</head>
+<body>
+
+<div id="taskNavigator">
+  <div id="taskDragHandle"><strong>📌 Jump to Task</strong></div>
+  <div id="taskLinks">Loading...</div>
+  <button type="button" onclick="document.getElementById('feedbackForm').requestSubmit()">
+    ✅ Submit All
+  </button>
+</div>
+
+
+<div class="container">
+  <h1>Rate the Translation</h1>
+<div class="instruction-box">
+  <p>
+    In this page, you will rate the <strong>LLM-generated translations</strong> that you just used to reconstruct Petri
+      nets. You will see the <strong>original Petri net</strong> for reference.
+      <p/>
+    <p>
+      Please rate each translation using the following criteria, rating each on a scale from <strong>1 (very poor)
+    </strong> to <strong>10 (excellent)</strong>:
+    </p>
+  <ol>
+    <li><strong>Accuracy</strong> – How well does the translation reflect the original model?</li>
+    <li><strong>Readability</strong> – Is the text easy to understand, well-structured, and clearly written?</li>
+    <li><strong>Overall Impression</strong> – Your overall subjective judgment of the translation’s quality.</li>
+  </ol>
+</div>
+
+  <div id="taskTitle">Loading tasks...</div>
+  <form id="feedbackForm"></form>
+
+  <div style="margin-top: 2rem;">
+    <button type="submit" form="feedbackForm">✅ Submit Feedback</button>
+    <p id="submitStatus"></p>
+  </div>
+</div>
+
+<script>
+const userId = localStorage.getItem("userId");
+const email = localStorage.getItem("email");
+const packageId = localStorage.getItem("taskId");
+
+if (!userId || !email || !packageId) {
+  alert("Session missing. Please login again.");
+  window.location.href = "login.html";
+}
+
+fetch(`/package/${packageId}`)
+  .then(res => res.json())
+  .then(data => {
+    const tasks = data.tasks;
+    document.getElementById("taskTitle").innerText = `Package: ${packageId} (${tasks.length} tasks)`;
+    const form = document.getElementById("feedbackForm");
+    const nav = document.getElementById("taskLinks");
+    nav.innerHTML = "";
+    tasks.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    tasks.forEach(taskId => {
+      const block = document.createElement("div");
+      block.classList.add("task-block");
+      block.id = taskId;
+
+      const navLink = document.createElement("a");
+      navLink.href = `#${taskId}`;
+      navLink.textContent = taskId;
+      nav.appendChild(navLink);
+
+      fetch(`/tasks/${taskId}`)
+        .then(res => res.json())
+        .then(task => {
+          block.innerHTML = `
+  <h3>${taskId}</h3>
+  <div class="task-content">
+    <div class="task-left">
+      <strong>📦 Original Petri Net:</strong><br>
+        <div class="image-wrapper">
+          <img src="${task.original_image_url}" class="zoomable-image" data-zoom="1" />
+        </div>
+
+      <div class="zoom-controls">
+        <button type="button" onclick="zoomImage(this, 1.2)">🔍 Zoom In</button>
+        <button type="button" onclick="zoomImage(this, 0.8)">🔎 Zoom Out</button>
+        <button type="button" onclick="zoomImage(this, 1, true)">♻️ Reset</button>
+      </div>
+
+      <strong>📄 Translation:</strong><br>
+      <iframe src="${task.translation_file_url}" height="350"></iframe>
+    </div>
+
+    <div class="task-right">
+      <label>Accuracy (1–10)
+        <select name="accuracy_${taskId}" required>
+          <option value="">Select</option>
+          ${[...Array(10).keys()].map(i => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+        </select>
+      </label>
+      <textarea name="acc_comment_${taskId}" placeholder="Optional accuracy comments" rows="2"></textarea>
+
+      <label>Readability (1–10)
+        <select name="readability_${taskId}" required>
+          <option value="">Select</option>
+          ${[...Array(10).keys()].map(i => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+        </select>
+      </label>
+      <textarea name="read_comment_${taskId}" placeholder="Optional readability comments" rows="2"></textarea>
+
+      <label>Overall Impression (1–10)
+        <select name="overall_${taskId}" required>
+          <option value="">Select</option>
+          ${[...Array(10).keys()].map(i => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+        </select>
+      </label>
+      <textarea name="other_comment_${taskId}" placeholder="Additional comments..." rows="2"></textarea>
+    </div>
+  </div>
+`;
+
+          form.appendChild(block);
+        });
+    });
+  });
+
+document.getElementById("feedbackForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  const ratings = [];
+
+  this.querySelectorAll("div.task-block").forEach(group => {
+    const header = group.querySelector("h3");
+    if (!header) return;
+
+    const taskId = header.innerText;
+    ratings.push({
+      task_id: taskId,
+      accuracy: parseInt(formData.get(`accuracy_${taskId}`)),
+      accuracy_comment: formData.get(`acc_comment_${taskId}`),
+      readability: parseInt(formData.get(`readability_${taskId}`)),
+      readability_comment: formData.get(`read_comment_${taskId}`),
+      overall: parseInt(formData.get(`overall_${taskId}`)),
+      overall_comment: formData.get(`other_comment_${taskId}`)
+    });
+  });
+
+  const payload = {
+    user_id: userId,
+    email: email,
+    package_id: packageId,
+    ratings: ratings,
+    timestamp: new Date().toISOString()
+  };
+
+  fetch("/submit-rating", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("submitStatus").innerText = data.success ? "✅ Submitted!" : "❌ Error submitting.";
+    if (data.success) {
+        alert(" You have finished! Thanks!!");
+      localStorage.clear();
+      setTimeout(() => window.location.href = "login.html", 3000);
+    }
+  });
+});
+
+function zoomImage(button, factor, reset = false) {
+  const wrapper = button.closest(".task-left");
+  const img = wrapper.querySelector("img.zoomable-image");
+
+  let current = parseFloat(img.getAttribute("data-zoom") || "1");
+
+  if (reset) {
+    current = 1;
+  } else {
+    current *= factor;
+    if (current > 4) current = 4; // optional cap
+  }
+
+  img.style.transform = `scale(${current})`;
+  img.setAttribute("data-zoom", current.toFixed(2));
+}
+
+// Attach Ctrl+scroll zoom to each zoomable image when it’s created
+const observer = new MutationObserver(() => {
+  document.querySelectorAll("img.zoomable-image").forEach(img => {
+    if (img.dataset.listenerAttached) return;
+
+    img.addEventListener("wheel", function(e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+
+      let current = parseFloat(img.getAttribute("data-zoom") || "1");
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+
+      current *= factor;
+      current = Math.min(Math.max(current, 0.1), 4);
+
+      img.style.transform = `scale(${current})`;
+      img.setAttribute("data-zoom", current.toFixed(2));
+    }, { passive: false });
+
+    img.dataset.listenerAttached = "true";
+  });
+});
+
+// Start observing for dynamically loaded tasks
+observer.observe(document.getElementById("feedbackForm"), { childList: true, subtree: true });
+
+// Make the task navigation draggable
+
+(function makeTaskNavigatorDraggable() {
+  const panel = document.getElementById("taskNavigator");
+  const handle = document.getElementById("taskDragHandle");
+
+  let offsetX = 0, offsetY = 0;
+  let isDragging = false;
+
+  handle.addEventListener("mousedown", (e) => {
+    isDragging = true;
+
+    // Fix current height to prevent collapse
+    panel.style.height = panel.offsetHeight + "px";
+    panel.style.maxHeight = "none"; // disable max-height during drag
+
+    // Capture offset relative to current position
+    const rect = panel.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
+    // Switch to top-based layout for accurate positioning
+    panel.style.top = rect.top + "px";
+    panel.style.left = rect.left + "px";
+    panel.style.bottom = "auto";
+    document.body.style.userSelect = "none";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    panel.style.left = `${e.clientX - offsetX}px`;
+    panel.style.top = `${e.clientY - offsetY}px`;
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (isDragging) {
+      panel.style.height = "auto";       // restore default height
+      panel.style.maxHeight = "70vh";    // restore max-height
+    }
+    isDragging = false;
+    document.body.style.userSelect = "";
+  });
+})();
+
+
+
+</script>
+</body>
+</html>
