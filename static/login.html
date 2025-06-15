@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>Thanks for participating our Evaluation</h1>
+    <h1> Welcome to our Evaluation</h1>
     <p style="font-size: 0.95em; color: #555; background: #f9f9f9; padding: 1em; border-left: 4px solid #ccc; margin-bottom: 1.5em;">
   <strong>Note:</strong> The name and password are automatically generated for each evaluation session.
 
@@ -15,7 +15,7 @@
         leave the page before completing all tasks :)
     </p>
     <p style="font-size: 0.95em; color: #555; background: #f9f9f9; padding: 1em; border-left: 4px solid #ccc; margin-bottom: 1.5em;">
-   You can also start a new evaluation by refreshing and "Start Evaluation" again :)
+   Select your background and you are ready to start :)
     </p>
 
     <form id="loginForm">
@@ -25,10 +25,12 @@
 
         <label>Please Select Your Background:<br>
             <select id="background">
+                <option value="No_Prior_Knowledge">No Prior Knowledge</option>
+                <option value="Heard_Barely_Used">Heard of Petri nets but barely used them</option>
+                <option value="APM_Student">Currently an APM Student</option>
+                <option value="BPI_Student">Currently an BPI Student</option>
+                <option value="Student_Passed_APM_or_BPI">Student Passed APM/BPI</option>
                 <option value="BPM_Expert">PM Expert/Researcher</option>
-                <option value="APM_Student">APM Student</option>
-                <option value="BPI_Student">BPI Student</option>
-                <option value="APMBPM_Passed">Student Passed APM/BPI</option>
             </select>
         </label><br><br>
         <button type="submit">Start Evaluation</button>
