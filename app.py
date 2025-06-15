@@ -22,7 +22,7 @@ FEEDBACK_FILE = os.path.join(DATABASE_FOLDER, "feedback.jsonl")
 TASK_FOLDER = "tasks"
 INSTRUCTIONS_FILE = "task_instruction.md"
 LOCK_TIMEOUT_HOURS = 2
-MAX_EVALUATIONS_PER_PACKAGE = 3
+MAX_EVALUATIONS_PER_PACKAGE = 10
 
 # Ensure folders and files exist
 os.makedirs(DATABASE_FOLDER, exist_ok=True)
